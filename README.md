@@ -76,6 +76,68 @@ uv run python download_blt_weights.py
 uv run python demo.py "A BLT has"
 ```
 
+## Local Training on AMD GPUs (ROCm)
+
+The commands below target a workstation with two Radeon RX 7900 XTX-class GPUs on Ubuntu 22.04/24.04. Adjust paths and package versions if your ROCm stack differs.
+
+1. **Install ROCm 6.3 or newer**
+   - Follow the [official ROCm native Ubuntu guide](https://rocm.docs.amd.com) to add AMD’s apt repo and install `rocm`, `rocblas`, and `rocfft`.
+   - After rebooting, confirm GPU visibility:
+
+     ```bash
+     /opt/rocm/bin/rocminfo | grep -E "Name|gfx"
+     /opt/rocm/bin/hipcc --version
+     ```
+
+2. **Create a ROCm PyTorch environment**
+
+   ```bash
+   conda create -n blt-rocm python=3.12 -y
+   conda activate blt-rocm
+
+   pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 \
+     --index-url https://download.pytorch.org/whl/rocm6.3
+   pip install pytorch-triton-rocm --index-url https://download.pytorch.org/whl/rocm6.3
+
+   pip install ninja
+   pip install -r requirements.txt
+   pip install xformers --index-url https://download.pytorch.org/whl/rocm6.3
+   ```
+
+   > Tip: if your system only offers ROCm 6.4 wheels, change the `--index-url` suffix to `rocm6.4` and keep the version triplet in sync.
+
+3. **Prepare a ROCm-friendly BLT config**
+   - Duplicate the debug template and point it to local paths:
+
+     ```bash
+     cp bytelatent/configs/debug.yaml bytelatent/configs/local_amd.yaml
+     ```
+
+   - Edit the copy and update:
+     - `dump_dir`, `data.root_dir`, and `data.preprocess_dir` to writable locations.
+     - `data.tokenizer_args.init_kwargs.bpe_tokenizer_path` to the tokenizer produced by `setup/download_tokenizer.py`.
+     - `distributed.fsdp_type: no_shard` (or keep `full_shard` with `dp_shard: 1`) and set `model.attn_impl: "sdpa"` to rely on ROCm kernels.
+     - Optional: increase `data.batch_size` once a smoke test succeeds.
+
+4. **Launch the debug pre-training run**
+
+   ```bash
+   export HIP_VISIBLE_DEVICES=0,1
+   export TORCH_NCCL_AVOID_RECORD_STREAMS=1
+   export TORCH_NCCL_BLOCKING_WAIT=1
+   export RCCL_DISABLE_CONTEXT_TRACKING=1
+
+   torchrun --standalone --nproc-per-node=2 \
+     -m bytelatent.train config=bytelatent/configs/local_amd.yaml
+   ```
+
+   Start with `--max_steps 1000` (or edit the config) to benchmark throughput before committing to long runs.
+
+5. **Troubleshooting**
+   - If collectives hang, set `NCCL_P2P_DISABLE=1` or `RCCL_LOG_LEVEL=INFO` and retry.
+   - `pynvml` warnings are expected on AMD hardware; they do not block training.
+   - Collect step timing with `wandb` or CSV logging to decide whether to raise `batch_size` or enable gradient accumulation.
+
 ## Downloading HF Model Weights and Generating Text
 
 We have released weights on HF for the [BLT 1B Model](https://huggingface.co/facebook/blt-1b) and [BLT 7B Model](https://huggingface.co/facebook/blt-7b).

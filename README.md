@@ -202,8 +202,30 @@ Note: The following instructions are not well tested in the BLT code as it is ba
 Use the provided script to download and prepare data from huggingface (among `fineweb_edu`, `fineweb_edu_10bt`, or `dclm_baseline_1.0`).
 This command will download the `fineweb_edu` and prepare it for training in the `./data` directory, specifying the amount of memory `terashuf` (the tool used to shuffle samples) will be allocated. By default, the number of chunks (`nchunks`) is 32. If you are running on fewer than 32 GPUs, it is recommended to set `nchunks` to 1 or to match `nchunks` with the number of GPUs (`nchunks` = NGPUs). See [here](https://github.com/facebookresearch/lingua/issues/55#issuecomment-2483643076) for more details.
 
+**General command:**
+
 ```bash
 python setup/download_prepare_hf_data.py fineweb_edu <MEMORY> --data_dir ./data --seed 42 --nchunks <NCHUNKS>
+```
+
+**For local workstations with 2 AMD Radeon 7900 XTX GPUs:**
+
+```bash
+# Download tokenizer first (required)
+python setup/download_tokenizer.py llama3 ./tokenizers/llama3 --api_key <HUGGINGFACE_TOKEN>
+
+# Then download training data - choose one dataset:
+# Option 1: FineWeb-Edu 10BT (recommended for local training - smaller subset)
+python setup/download_prepare_hf_data.py fineweb_edu_10bt 8 --data_dir ./data --seed 42 --nchunks 2
+
+# Option 2: Full FineWeb-Edu
+python setup/download_prepare_hf_data.py fineweb_edu 8 --data_dir ./data --seed 42 --nchunks 2
+
+# Option 3: DCLM Baseline 1.0 (10% subset)
+python setup/download_prepare_hf_data.py dclm_baseline_1.0_10prct 8 --data_dir ./data --seed 42 --nchunks 2
+
+# Option 4: Full DCLM Baseline 1.0
+python setup/download_prepare_hf_data.py dclm_baseline_1.0 8 --data_dir ./data --seed 42 --nchunks 2
 ```
 
 to download tokenizer (here llama3), use the following script:

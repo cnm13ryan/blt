@@ -68,10 +68,22 @@ conda activate blt_<date>
 Run the following to install the env using [uv](https://docs.astral.sh/uv/).
 The main benefit of this method is that the build is reproducible since there is a lock file.
 
+**CUDA / default stack**
+
 ```bash
 uv pip install --group pre_build --no-build-isolation
 uv pip install --group compile_xformers --no-build-isolation
 uv sync
+uv run python download_blt_weights.py
+uv run python demo.py "A BLT has"
+```
+
+**AMD ROCm stack**
+
+```bash
+uv pip install --group pre_build_rocm --extra rocm --no-build-isolation
+uv pip install --group compile_xformers --extra rocm --no-build-isolation
+uv sync --extra rocm
 uv run python download_blt_weights.py
 uv run python demo.py "A BLT has"
 ```
@@ -90,6 +102,8 @@ The commands below target a workstation with two Radeon RX 7900 XTX-class GPUs o
      ```
 
 2. **Create a ROCm PyTorch environment**
+
+   If you prefer `uv`, run `uv pip install --group pre_build_rocm --extra rocm --no-build-isolation`, followed by `uv pip install --group compile_xformers --extra rocm --no-build-isolation` and `uv sync --extra rocm`. Otherwise, a manual conda + pip setup is shown below.
 
    ```bash
    conda create -n blt-rocm python=3.12 -y

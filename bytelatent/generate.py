@@ -402,6 +402,33 @@ def load_consolidated_model_and_tokenizer(consolidated_path, init_distributed=Fa
     fs = get_fs(train_args_path)
     train_args = TrainArgs.model_validate_json(fs.read_text(train_args_path))
 
+    attn_override = os.environ.get("BLT_ATTENTION_IMPL")
+    if attn_override:
+        attn_override = attn_override.strip().lower()
+        if attn_override:
+            valid_impls = {"sdpa", "xformers", "flex_attention", "fmha"}
+            if attn_override not in valid_impls:
+                raise ValueError(
+                    f"Unsupported BLT_ATTENTION_IMPL='{attn_override}'. "
+                    f"Valid options: {sorted(valid_impls)}"
+                )
+
+            def _override_attn(args_model):
+                if args_model is None:
+                    return None
+                updates = {"attn_impl": attn_override}
+                if attn_override != "flex_attention":
+                    # Disable flex attention-specific kernels when using SDPA/FMHA.
+                    updates["cross_attn_use_flex_attention"] = False
+                return args_model.model_copy(update=updates)
+
+            if train_args.train_entropy_model:
+                overridden = _override_attn(train_args.entropy_model)
+                train_args = train_args.model_copy(update={"entropy_model": overridden})
+            else:
+                overridden = _override_attn(train_args.model)
+                train_args = train_args.model_copy(update={"model": overridden})
+
     if train_args.train_entropy_model:
         model_args = train_args.entropy_model
         model = LMTransformer(model_args)

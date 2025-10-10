@@ -19,6 +19,20 @@ def load_entropy_model(entropy_model_checkpoint_dir, state_dict_path, device="cp
     logger.warning(
         "Update checkpoint to load attn and sliding window args from checkpoint"
     )
+    attn_impl = os.environ.get("BLT_ENTROPY_ATTENTION_IMPL")
+    if attn_impl is None:
+        attn_impl = os.environ.get("BLT_ATTENTION_IMPL")
+    valid_attn = {"sdpa", "xformers", "flex_attention", "fmha"}
+    if attn_impl is not None:
+        attn_impl = attn_impl.strip().lower()
+        if attn_impl not in valid_attn:
+            raise ValueError(
+                f"Unsupported attention impl for entropy model: {attn_impl}. "
+                f"Expected one of {sorted(valid_attn)}."
+            )
+    else:
+        attn_impl = "xformers"
+
     entropy_model_args = LMTransformerArgs(
         dim=model_params["dim"],
         n_layers=model_params["n_layers"],
@@ -27,7 +41,7 @@ def load_entropy_model(entropy_model_checkpoint_dir, state_dict_path, device="cp
         ffn_dim_multiplier=model_params["ffn_dim_multiplier"],
         vocab_size=model_params["vocab_size"],
         attn_bias_type="local_block_causal",
-        attn_impl="xformers",
+        attn_impl=attn_impl,
         sliding_window=512,
     )
     entropy_model = LMTransformer(entropy_model_args)

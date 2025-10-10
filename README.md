@@ -85,6 +85,11 @@ uv pip install --group pre_build_rocm --extra rocm --no-build-isolation
 uv pip install --group compile_xformers --extra rocm --no-build-isolation
 uv sync --extra rocm
 uv run python download_blt_weights.py
+
+# Run demo with SDPA attention (required for AMD GPUs)
+BLT_ATTENTION_IMPL=sdpa \
+BLT_ALLOW_MISSING_FLEX_ATTENTION=1 \
+BLT_SUPPRESS_ATTN_ERROR=1 \
 uv run python demo.py "A BLT has"
 ```
 
@@ -191,9 +196,19 @@ patcher = tok_and_patcher.patcher_args.build()
 ## Load Weights for Running BLT Train Script
 
 1. Download the model weights with: `python download_blt_weights.py`, which will load to `hf-weights`
-2. Run the generate demo: `python demo.py "A BLT has"`.
+2. Run the generate demo:
+   - **CUDA/NVIDIA GPUs:** `python demo.py "A BLT has"`
+   - **AMD/ROCm GPUs:** Use the environment variables to enable SDPA attention fallback:
+     ```bash
+     BLT_ATTENTION_IMPL=sdpa \
+     BLT_ALLOW_MISSING_FLEX_ATTENTION=1 \
+     BLT_SUPPRESS_ATTN_ERROR=1 \
+     python demo.py "A BLT has"
+     ```
 
 The demo generates text, but is also a good starting point for loading BLT in your own code.
+
+**Note for AMD GPUs:** The environment variables above force the model to use PyTorch's `scaled_dot_product_attention` instead of flex-attention, which is required for compatibility with ROCm/RDNA3 (gfx1100) GPUs like the Radeon RX 7900 XTX.
 
 ## Downloading Training Data
 

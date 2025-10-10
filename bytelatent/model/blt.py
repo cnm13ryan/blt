@@ -279,9 +279,11 @@ def cross_attn_mask(
             )
             return block_mask
         else:
-            return torch.where(
-                cross_mask, torch.tensor(0.0), torch.tensor(float("-inf"))
-            ).unsqueeze(
+            zero = torch.tensor(0.0, device=cross_mask.device, dtype=torch.float32)
+            neg_inf = torch.tensor(
+                float("-inf"), device=cross_mask.device, dtype=torch.float32
+            )
+            return torch.where(cross_mask, zero, neg_inf).unsqueeze(
                 1
             )  # [bs, 1, q_len, kv_len]
 

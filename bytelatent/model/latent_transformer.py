@@ -100,9 +100,29 @@ class CrossAttention(nn.Module):
         xk = repeat_kv(xk, self.heads_per_group, dim=2)
         xv = repeat_kv(xv, self.heads_per_group, dim=2)
 
-        assert mask is None or isinstance(mask, BlockMask)
         xq, xk, xv = map(lambda e: e.transpose(1, 2), (xq, xk, xv))
-        output = flex_attention_comp(xq, xk, xv, block_mask=mask)
+
+        use_flex = (
+            flex_attention_comp is not None and isinstance(mask, BlockMask)
+        )
+
+        if use_flex:
+            output = flex_attention_comp(xq, xk, xv, block_mask=mask)
+        else:
+            if isinstance(mask, BlockMask):
+                raise RuntimeError(
+                    "Received a BlockMask but flex attention kernels are unavailable. "
+                    "Disable flex masks (set cross_attn_use_flex_attention=False) when "
+                    "forcing non-flex attention implementations."
+                )
+            attn_mask = mask if isinstance(mask, torch.Tensor) else None
+            output = F.scaled_dot_product_attention(
+                xq,
+                xk,
+                xv,
+                attn_mask=attn_mask,
+            )
+
         output = output.transpose(1, 2).contiguous()  # B H S D -> B S H D
 
         output = self.wo(output.reshape(output_shape))

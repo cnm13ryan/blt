@@ -46,13 +46,24 @@ default_no_recompute_ops = {
     torch.ops.aten._scaled_dot_product_efficient_attention.default,
     torch.ops.aten._scaled_dot_product_flash_attention.default,
     torch.ops.c10d_functional.reduce_scatter_tensor.default,
-    torch.ops.xformers_flash.flash_fwd.default,
 }
 
+try:
+    flash_fwd_op = torch.ops.xformers_flash.flash_fwd.default
+except AttributeError:
+    flash_fwd_op = None
+
+if flash_fwd_op is not None:
+    default_no_recompute_ops.add(flash_fwd_op)
+
 if int(os.environ.get("BLT_ALLOW_MISSING_FLEX_ATTENTION", False)) == 0:
-    default_no_recompute_ops.add(
-        torch.ops.xformers.efficient_attention_forward_cutlass.default
-    )
+    try:
+        cutlass_op = torch.ops.xformers.efficient_attention_forward_cutlass.default
+    except AttributeError:
+        cutlass_op = None
+
+    if cutlass_op is not None:
+        default_no_recompute_ops.add(cutlass_op)
 
 
 class DistributedArgs(BaseModel):

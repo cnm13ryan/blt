@@ -50,8 +50,7 @@ explicit = true
 
 [tool.uv.sources]
 torch = [
-    { index = "torch-nightly-cu121" },
-    { index = "torch-rocm63", extra = "rocm", marker = "sys_platform == 'linux'" },
+    { index = "torch-rocm63", marker = "sys_platform == 'linux'" },
 ]
 torchvision = [
     { index = "torch-rocm63", extra = "rocm", marker = "sys_platform == 'linux'" },
@@ -63,7 +62,6 @@ pytorch-triton-rocm = [
     { index = "torch-rocm63", extra = "rocm", marker = "sys_platform == 'linux'" },
 ]
 xformers = [
-    { git = "https://github.com/facebookresearch/xformers.git", rev = "de742ec3d64bd83b1184cc043e541f15d270c148" },
     { index = "torch-rocm63", extra = "rocm", marker = "sys_platform == 'linux'" },
 ]
 
@@ -71,7 +69,7 @@ xformers = [
 pre_build = [
     "setuptools",
     "ninja",
-    "torch==2.6.0.dev20241112",
+    "torch==2.6.0.dev20241112; extra != 'rocm'",
 ]
 pre_build_rocm = [
     "setuptools",
@@ -93,7 +91,6 @@ dev = [
 [tool.uv]
 no-build-isolation-package = ["xformers"]
 index-strategy = "unsafe-best-match"
-override-dependencies = ["torch==2.6.0.dev20241112; extra != 'rocm'"]
 
 [tool.isort]
 profile = "black"

@@ -6,9 +6,6 @@ resolution-markers = [
     "sys_platform != 'linux'",
 ]
 
-[manifest]
-overrides = [{ name = "torch", marker = "extra != 'rocm'", specifier = "==2.6.0.dev20241112", index = "https://download.pytorch.org/whl/nightly/cu121" }]
-
 [[package]]
 name = "absl-py"
 version = "2.2.2"
@@ -29,6 +26,8 @@ dependencies = [
     { name = "psutil" },
     { name = "pyyaml" },
     { name = "safetensors" },
+    { name = "torch", version = "2.7.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/8a/6e/c29a1dcde7db07f47870ed63e5124086b11874ad52ccd533dc1ca2c799da/accelerate-1.6.0.tar.gz", hash = "sha256:28c1ef1846e690944f98b68dc7b8bb6c51d032d45e85dcbb3adb0c8b99dffb32", size = 363804, upload-time = "2025-04-01T11:53:03.037Z" }
 wheels = [
@@ -209,20 +208,23 @@ dependencies = [
     { name = "typer" },
     { name = "viztracer" },
     { name = "wandb" },
-    { name = "xformers" },
+    { name = "xformers", version = "0.0.31.post1", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
+    { name = "xformers", version = "0.0.31.post1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
 ]
 
 [package.optional-dependencies]
 rocm = [
     { name = "pytorch-triton-rocm", marker = "sys_platform == 'linux'" },
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
     { name = "torchaudio", marker = "sys_platform == 'linux'" },
     { name = "torchvision", marker = "sys_platform == 'linux'" },
-    { name = "xformers", marker = "sys_platform == 'linux'" },
+    { name = "xformers", version = "0.0.31.post1", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
 ]
 
 [package.dev-dependencies]
 compile-xformers = [
-    { name = "xformers" },
+    { name = "xformers", version = "0.0.31.post1", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
+    { name = "xformers", version = "0.0.31.post1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
 ]
 dev = [
     { name = "black" },
@@ -238,6 +240,7 @@ pre-build-rocm = [
     { name = "ninja" },
     { name = "pytorch-triton-rocm", marker = "sys_platform == 'linux'" },
     { name = "setuptools" },
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
     { name = "torchaudio", marker = "sys_platform == 'linux'" },
     { name = "torchvision", marker = "sys_platform == 'linux'" },
 ]
@@ -263,21 +266,19 @@ requires-dist = [
     { name = "sentencepiece", specifier = ">=0.2.0" },
     { name = "submitit", specifier = ">=1.5.2" },
     { name = "tiktoken", specifier = ">=0.8.0" },
-    { name = "torch", marker = "sys_platform == 'linux' and extra == 'rocm'", specifier = "==2.7.1", index = "https://download.pytorch.org/whl/nightly/cu121" },
-    { name = "torch", marker = "sys_platform == 'linux' and extra == 'rocm'", specifier = "==2.7.1", index = "https://download.pytorch.org/whl/rocm6.3", conflict = { package = "blt", extra = "rocm" } },
+    { name = "torch", marker = "sys_platform == 'linux' and extra == 'rocm'", specifier = "==2.7.1", index = "https://download.pytorch.org/whl/rocm6.3" },
     { name = "torchaudio", marker = "sys_platform == 'linux' and extra == 'rocm'", specifier = "==2.7.1", index = "https://download.pytorch.org/whl/rocm6.3", conflict = { package = "blt", extra = "rocm" } },
     { name = "torchvision", marker = "sys_platform == 'linux' and extra == 'rocm'", specifier = "==0.22.1", index = "https://download.pytorch.org/whl/rocm6.3", conflict = { package = "blt", extra = "rocm" } },
     { name = "typer", specifier = ">=0.15.3" },
     { name = "viztracer", specifier = ">=1.0.3" },
     { name = "wandb", specifier = ">=0.19.10" },
-    { name = "xformers", git = "https://github.com/facebookresearch/xformers.git?rev=de742ec3d64bd83b1184cc043e541f15d270c148" },
+    { name = "xformers" },
     { name = "xformers", marker = "sys_platform == 'linux' and extra == 'rocm'", index = "https://download.pytorch.org/whl/rocm6.3", conflict = { package = "blt", extra = "rocm" } },
-    { name = "xformers", marker = "sys_platform == 'linux' and extra == 'rocm'", git = "https://github.com/facebookresearch/xformers.git?rev=de742ec3d64bd83b1184cc043e541f15d270c148" },
 ]
 provides-extras = ["rocm"]
 
 [package.metadata.requires-dev]
-compile-xformers = [{ name = "xformers", git = "https://github.com/facebookresearch/xformers.git?rev=de742ec3d64bd83b1184cc043e541f15d270c148" }]
+compile-xformers = [{ name = "xformers" }]
 dev = [
     { name = "black", specifier = "==24.8.0" },
     { name = "ipython", specifier = ">=9.2.0" },
@@ -287,13 +288,14 @@ dev = [
 pre-build = [
     { name = "ninja" },
     { name = "setuptools" },
-    { name = "torch", specifier = "==2.6.0.dev20241112", index = "https://download.pytorch.org/whl/nightly/cu121" },
+    { name = "torch", marker = "sys_platform == 'linux' and extra != 'rocm'", specifier = "==2.6.0.dev20241112", index = "https://download.pytorch.org/whl/rocm6.3" },
+    { name = "torch", marker = "sys_platform != 'linux' and extra != 'rocm'", specifier = "==2.6.0.dev20241112" },
 ]
 pre-build-rocm = [
     { name = "ninja" },
     { name = "pytorch-triton-rocm", marker = "sys_platform == 'linux'" },
     { name = "setuptools" },
-    { name = "torch", marker = "sys_platform == 'linux'", specifier = "==2.7.1", index = "https://download.pytorch.org/whl/nightly/cu121" },
+    { name = "torch", marker = "sys_platform == 'linux'", specifier = "==2.7.1", index = "https://download.pytorch.org/whl/rocm6.3" },
     { name = "torchaudio", marker = "sys_platform == 'linux'", specifier = "==2.7.1" },
     { name = "torchvision", marker = "sys_platform == 'linux'", specifier = "==0.22.1" },
 ]
@@ -784,6 +786,8 @@ dependencies = [
     { name = "sacrebleu" },
     { name = "scikit-learn" },
     { name = "sqlitedict" },
+    { name = "torch", version = "2.7.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
     { name = "tqdm-multiprocess" },
     { name = "transformers" },
     { name = "word2number" },
@@ -920,6 +924,14 @@ wheels = [
 ]
 
 [[package]]
+name = "mpmath"
+version = "1.3.0"
+source = { registry = "https://download.pytorch.org/whl/nightly/cu121" }
+wheels = [
+    { url = "https://download.pytorch.org/whl/nightly/mpmath-1.3.0-py3-none-any.whl" },
+]
+
+[[package]]
 name = "multidict"
 version = "6.4.3"
 source = { registry = "https://pypi.org/simple" }
@@ -976,6 +988,14 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/13/e1/a602073ef14da8f065b08c178861cf782f08a3676492042566ae3ccc5671/narwhals-1.37.1.tar.gz", hash = "sha256:1eb8f17ff00e6c471d5afb704e9068f41657234eb73bde2ee66ad975a170015b", size = 272029, upload-time = "2025-04-29T13:56:33.11Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b1/e3/79d95ed89f46b134dd801b54375e362c505303bd739a6737efc14d0de835/narwhals-1.37.1-py3-none-any.whl", hash = "sha256:6f358a23b7351897d6efb45496dc0528918ce4ca6c8f9631594885cd873576a7", size = 332366, upload-time = "2025-04-29T13:56:31.461Z" },
+]
+
+[[package]]
+name = "networkx"
+version = "3.5"
+source = { registry = "https://download.pytorch.org/whl/nightly/cu121" }
+wheels = [
+    { url = "https://download.pytorch.org/whl/nightly/networkx-3.5-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1171,6 +1191,8 @@ dependencies = [
     { name = "psutil" },
     { name = "pyyaml" },
     { name = "safetensors" },
+    { name = "torch", version = "2.7.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
     { name = "tqdm" },
     { name = "transformers" },
 ]
@@ -1458,13 +1480,13 @@ wheels = [
 
 [[package]]
 name = "pytorch-triton-rocm"
-version = "3.4.0"
+version = "3.3.1"
 source = { registry = "https://download.pytorch.org/whl/rocm6.3" }
 dependencies = [
     { name = "setuptools", marker = "sys_platform == 'linux'" },
 ]
 wheels = [
-    { url = "https://download.pytorch.org/whl/pytorch_triton_rocm-3.4.0-cp312-cp312-linux_x86_64.whl", hash = "sha256:7afe951b9fc38f1a5b3a7b98bebbaa092bf51e6192b699b4fade9b1ad6fc9c2c" },
+    { url = "https://download.pytorch.org/whl/pytorch_triton_rocm-3.3.1-cp312-cp312-linux_x86_64.whl", hash = "sha256:977423eee5c542a3f8aa4f527aec1688c4d485f207089cb595a8e638fcc3888a" },
 ]
 
 [[package]]
@@ -1801,6 +1823,17 @@ wheels = [
 ]
 
 [[package]]
+name = "sympy"
+version = "1.14.0"
+source = { registry = "https://download.pytorch.org/whl/nightly/cu121" }
+dependencies = [
+    { name = "mpmath" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/nightly/sympy-1.14.0-py3-none-any.whl" },
+]
+
+[[package]]
 name = "tabledata"
 version = "1.3.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1893,9 +1926,54 @@ wheels = [
 ]
 
 [[package]]
+name = "torch"
+version = "2.7.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "sys_platform != 'linux'",
+]
+dependencies = [
+    { name = "filelock", marker = "sys_platform != 'linux'" },
+    { name = "fsspec", marker = "sys_platform != 'linux'" },
+    { name = "jinja2", marker = "sys_platform != 'linux'" },
+    { name = "networkx", marker = "sys_platform != 'linux'" },
+    { name = "setuptools", marker = "sys_platform != 'linux'" },
+    { name = "sympy", marker = "sys_platform != 'linux'" },
+    { name = "typing-extensions", marker = "sys_platform != 'linux'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/37/a37495502bc7a23bf34f89584fa5a78e25bae7b8da513bc1b8f97afb7009/torch-2.7.1-cp312-cp312-win_amd64.whl", hash = "sha256:d8bf6e1856ddd1807e79dc57e54d3335f2b62e6f316ed13ed3ecfe1fc1df3d8b", size = 216050349, upload-time = "2025-06-04T17:38:59.709Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/60/04b77281c730bb13460628e518c52721257814ac6c298acd25757f6a175c/torch-2.7.1-cp312-none-macosx_11_0_arm64.whl", hash = "sha256:787687087412c4bd68d315e39bc1223f08aae1d16a9e9771d95eabbb04ae98fb", size = 68645146, upload-time = "2025-06-04T17:38:52.97Z" },
+]
+
+[[package]]
+name = "torch"
+version = "2.7.1+rocm6.3"
+source = { registry = "https://download.pytorch.org/whl/rocm6.3" }
+resolution-markers = [
+    "sys_platform == 'linux'",
+]
+dependencies = [
+    { name = "filelock", marker = "sys_platform == 'linux'" },
+    { name = "fsspec", marker = "sys_platform == 'linux'" },
+    { name = "jinja2", marker = "sys_platform == 'linux'" },
+    { name = "networkx", marker = "sys_platform == 'linux'" },
+    { name = "pytorch-triton-rocm", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "setuptools", marker = "sys_platform == 'linux'" },
+    { name = "sympy", marker = "sys_platform == 'linux'" },
+    { name = "typing-extensions", marker = "sys_platform == 'linux'" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/rocm6.3/torch-2.7.1%2Brocm6.3-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:b0c10342f64a34998ae8d5084aa1beae7e11defa46a4e05fe9aa6f09ffb0db37" },
+]
+
+[[package]]
 name = "torchaudio"
 version = "2.7.1+rocm6.3"
 source = { registry = "https://download.pytorch.org/whl/rocm6.3" }
+dependencies = [
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
+]
 wheels = [
     { url = "https://download.pytorch.org/whl/rocm6.3/torchaudio-2.7.1%2Brocm6.3-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:dd485df55ab7b387594070d47dd8bdba81dc77de82e5ba38fc6784d053455272" },
 ]
@@ -1907,6 +1985,7 @@ source = { registry = "https://download.pytorch.org/whl/rocm6.3" }
 dependencies = [
     { name = "numpy", marker = "sys_platform == 'linux'" },
     { name = "pillow", marker = "sys_platform == 'linux'" },
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
 ]
 wheels = [
     { url = "https://download.pytorch.org/whl/rocm6.3/torchvision-0.22.1%2Brocm6.3-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:0dce205fb04d9eb2f6feb74faf17cba9180aff70a8c8ac084912ce41b2dc0ab7" },
@@ -2173,10 +2252,33 @@ wheels = [
 
 [[package]]
 name = "xformers"
-version = "0.0.29+de742ec.d20251009"
-source = { git = "https://github.com/facebookresearch/xformers.git?rev=de742ec3d64bd83b1184cc043e541f15d270c148#de742ec3d64bd83b1184cc043e541f15d270c148" }
+version = "0.0.31.post1"
+source = { registry = "https://download.pytorch.org/whl/rocm6.3" }
+resolution-markers = [
+    "sys_platform == 'linux'",
+]
 dependencies = [
-    { name = "numpy" },
+    { name = "numpy", marker = "sys_platform == 'linux'" },
+    { name = "torch", version = "2.7.1+rocm6.3", source = { registry = "https://download.pytorch.org/whl/rocm6.3" }, marker = "sys_platform == 'linux'" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/rocm6.3/xformers-0.0.31.post1-cp39-abi3-manylinux_2_28_x86_64.whl" },
+]
+
+[[package]]
+name = "xformers"
+version = "0.0.31.post1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "sys_platform != 'linux'",
+]
+dependencies = [
+    { name = "numpy", marker = "sys_platform != 'linux'" },
+    { name = "torch", version = "2.7.1", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'linux'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/29/e2/77fb19e49e2ee06e070c8383b286c5510c1451404440aa9639544e180e5e/xformers-0.0.31.post1.tar.gz", hash = "sha256:06a12031a00aadd56fbe543a73258b18064bccdf85fbf5de4c3e67c69e301505", size = 12110280, upload-time = "2025-07-08T15:35:49.125Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ff/ba/e953b24cc6e1ac3798d8ac16565b0c63c050df3b8130df752e70e1ce98ed/xformers-0.0.31.post1-cp39-abi3-win_amd64.whl", hash = "sha256:294c30125442f5a84964e5b87b3cd5e83b87053896a13bbfee17c0043ee66e62", size = 100216491, upload-time = "2025-07-08T15:35:45.201Z" },
 ]
 
 [[package]]
